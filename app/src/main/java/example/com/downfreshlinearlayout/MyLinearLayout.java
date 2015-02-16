@@ -114,6 +114,57 @@ public class MyLinearLayout extends LinearLayout implements View.OnTouchListener
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        setIsAbleToPull(event);
+        if (ableToPull) {
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN:
+                    yDown = event.getRawY();
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float yMove = event.getRawY();
+                    int distance = (int) (yMove - yDown);
+                    // 如果手指是下滑状态，并且下拉头是完全隐藏的，就屏蔽下拉事件
+                    if (distance <= 0 && headerLayoutParams.topMargin <= hideHeaderHeight) {
+                        return false;
+                    }
+                    if (distance < touchSlop) {
+                        return false;
+                    }
+                    if (currentStatus != STATUS_REFRESHING) {
+                        if (headerLayoutParams.topMargin > 0) {
+                            currentStatus = STATUS_RELEASE_TO_REFRESH;
+                        } else {
+                            currentStatus = STATUS_PULL_TO_REFRESH;
+                        }
+                        // 通过偏移下拉头的topMargin值，来实现下拉效果
+                        headerLayoutParams.topMargin = (distance / 2) + hideHeaderHeight;
+                        header.setLayoutParams(headerLayoutParams);
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                default:
+                    if (currentStatus == STATUS_RELEASE_TO_REFRESH) {
+                        // 松手时如果是释放立即刷新状态，就去调用正在刷新的任务
+                        new RefreshingTask().execute();
+                    } else if (currentStatus == STATUS_PULL_TO_REFRESH) {
+                        // 松手时如果是下拉状态，就去调用隐藏下拉头的任务
+                        new HideHeaderTask().execute();
+                    }
+                    break;
+            }
+            // 时刻记得更新下拉头中的信息
+            if (currentStatus == STATUS_PULL_TO_REFRESH
+                    || currentStatus == STATUS_RELEASE_TO_REFRESH) {
+                updateHeaderView();
+                // 当前正处于下拉或释放状态，要让ListView失去焦点，否则被点击的那一项会一直处于选中状态
+                listView.setPressed(false);
+                listView.setFocusable(false);
+                listView.setFocusableInTouchMode(false);
+                lastStatus = currentStatus;
+                // 当前正处于下拉或释放状态，通过返回true屏蔽掉ListView的滚动事件
+                return true;
+            }
+        }
         return false;
     }
 

@@ -20,8 +20,25 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
+        setContentView(R.layout.activity_main);
+        refreshableView = (MyLinearLayout) findViewById(R.id.mylayout);
+        listView = (ListView) findViewById(R.id.listview);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,items);
+        listView.setAdapter(adapter);
+        refreshableView.setOnRefreshListener(new MyLinearLayout.PullToRefreshListener() {
+            @Override
+            public void onRefresh() {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                refreshableView.finishRefreshing();
+                }
+            },0);
+
+
     }
 
 
