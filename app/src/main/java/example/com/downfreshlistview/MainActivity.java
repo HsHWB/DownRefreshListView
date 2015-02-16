@@ -4,14 +4,24 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import example.com.downfreshlinearlayout.MyLinearLayout;
 
 
 public class MainActivity extends Activity {
 
+    MyLinearLayout refreshableView;
+    ListView listView;
+    ArrayAdapter<String> adapter;
+    String[] items = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L" };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
     }
 
 
